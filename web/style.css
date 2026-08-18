@@ -1,0 +1,268 @@
+/* ── 主题（4 套配色，body[data-theme] 切换；默认蓝紫）── */
+:root, body[data-theme="blue"] {
+  --bg: #f6f7f9; --panel: #ffffff; --line: #e6e8eb;
+  --text: #1f2329; --muted: #6b7280;
+  --accent: #3b82f6; --accent-soft: #eef4ff;
+  --good: #16a34a; --warn: #d97706; --bad: #dc2626;
+  --radius: 10px;
+}
+body[data-theme="green"] {          /* 森林绿 */
+  --bg: #f2f7f4; --panel: #ffffff; --line: #dce9e1;
+  --text: #1c2b23; --muted: #5d7368;
+  --accent: #16a34a; --accent-soft: #e6f5ec;
+}
+body[data-theme="pink"] {           /* 樱花粉 */
+  --bg: #faf5f7; --panel: #ffffff; --line: #f0dfe6;
+  --text: #33202a; --muted: #8a6a77;
+  --accent: #ec4899; --accent-soft: #fdeef5;
+}
+body[data-theme="dark"] {           /* 暗夜 */
+  --bg: #111827; --panel: #1f2937; --line: #374151;
+  --text: #e5e7eb; --muted: #9ca3af;
+  --accent: #60a5fa; --accent-soft: #1e3a5f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── 顶栏（fixed 固定，主内容滚动时始终可见）────────── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+body { padding-top: 59px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+.brand h1 { font-size: 18px; font-weight: 700; }
+.brand-sub { font-size: 12px; color: var(--muted); }
+.game-box { display: flex; align-items: center; gap: 8px; }
+.game-box label { color: var(--muted); font-size: 13px; }
+select {
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--text); font-size: 14px; min-width: 120px;
+}
+
+/* ── 布局 ─────────────────────────────── */
+.layout { display: flex; min-height: calc(100vh - 59px); }
+
+.sidebar {
+  width: 140px; flex-shrink: 0; padding: 14px 10px;
+  background: var(--panel); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 6px;
+  /* 侧边栏固定：主内容滚动时不跟随，吸在顶栏下方，自身内容可独立滚动 */
+  position: sticky; top: 59px; align-self: flex-start;
+  height: calc(100vh - 59px); overflow-y: auto;
+}
+.nav-btn {
+  text-align: left; padding: 8px 12px; border: none; border-radius: 8px;
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 14px;
+  transition: all .15s;
+}
+.nav-btn:hover { background: var(--bg); color: var(--text); }
+.nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* 侧边栏账户资产汇总（四类：角色/武器/圣遗物/材料） */
+.side-summary {
+  margin-top: auto; border-top: 1px solid var(--line);
+  padding: 12px 6px 4px; font-size: 12px;
+}
+.side-summary-title { color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+.side-summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2px 4px; color: var(--muted); border-radius: 6px;
+}
+.side-summary-row b { color: var(--accent); font-size: 13px; }
+.side-summary-total {
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px dashed var(--line); margin-top: 6px; padding: 6px 4px 0;
+  color: var(--text); font-weight: 600;
+}
+.side-summary-total b { color: var(--accent); font-size: 14px; }
+.side-summary-empty { color: var(--muted); line-height: 1.6; padding: 2px 4px; }
+
+.content { flex: 1; padding: 24px 28px; max-width: 900px; }
+
+/* ── 面板 ─────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; }
+.panel h2 { font-size: 20px; margin-bottom: 4px; }
+.hint { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.row > label { color: var(--muted); flex-shrink: 0; }
+
+/* ── 按钮 ─────────────────────────────── */
+button { font-family: inherit; }
+.primary {
+  background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  padding: 8px 16px; cursor: pointer; font-size: 14px;
+}
+.primary:hover { background: #2563eb; }
+.primary:disabled { background: #b9cdf5; cursor: not-allowed; }
+.ghost {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 14px;
+}
+.ghost:hover { background: var(--bg); }
+.action-row { display: flex; gap: 10px; margin: 12px 0; }
+
+/* ── 识别 ─────────────────────────────── */
+.mode-switch { display: flex; gap: 6px; margin-bottom: 12px; }
+.mode-btn {
+  padding: 6px 14px; border: 1px solid var(--line); background: var(--panel);
+  border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 13px;
+}
+.mode-btn.active { background: var(--accent-soft); color: var(--accent); border-color: #c7dbff; }
+.mode-body.hidden { display: none; }
+textarea {
+  width: 100%; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px; font-family: inherit; font-size: 14px; resize: vertical;
+}
+.drop-zone {
+  display: flex; align-items: center; justify-content: center;
+  height: 120px; border: 1.5px dashed var(--line); border-radius: var(--radius);
+  color: var(--muted); cursor: pointer; font-size: 13px;
+}
+.drop-zone:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── 结果通用 ─────────────────────────── */
+.hidden { display: none !important; }
+.capture-preview {
+  width: 100%; max-height: 340px; border: 1px solid var(--line);
+  border-radius: var(--radius); background: #0b0d10; margin-bottom: 12px;
+}
+.result { margin-top: 16px; }
+.result.hidden { display: none; }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+}
+.card-title { font-weight: 600; margin-bottom: 6px; }
+.tag {
+  display: inline-block; padding: 1px 8px; border-radius: 6px;
+  font-size: 12px; margin-right: 6px;
+}
+.tag.type { background: var(--accent-soft); color: var(--accent); }
+.tag.ok { background: #e7f7ec; color: var(--good); }
+.tag.warn { background: #fdf3e3; color: var(--warn); }
+.tag.bad { background: #fdeaea; color: var(--bad); }
+.list { list-style: none; }
+.list li { padding: 3px 0; color: #374151; }
+.list li::before { content: "· "; color: var(--accent); }
+
+/* ── 毕业度大数字 ─────────────────────── */
+.big-score { text-align: center; padding: 8px 0 14px; }
+.big-score b { font-size: 44px; font-weight: 700; color: var(--accent); }
+.big-score span { color: var(--muted); }
+.bar { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.breakdown .bd {
+  display: flex; justify-content: space-between; padding: 6px 10px;
+  background: var(--bg); border-radius: 8px; font-size: 13px;
+}
+
+/* ── 队伍 chips ──────────────────────── */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 5px 12px; border: 1px solid var(--line); border-radius: 16px;
+  cursor: pointer; color: var(--muted); font-size: 13px; user-select: none;
+}
+.chip.on { background: var(--accent-soft); color: var(--accent); border-color: #c7dbff; }
+.member-weight { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.member-weight input {
+  width: 64px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px;
+}
+
+/* ── 毕业标准 ────────────────────────── */
+.tier-switch { display: flex; gap: 6px; }
+.tier-btn {
+  padding: 5px 12px; border: 1px solid var(--line); background: var(--panel);
+  border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 13px;
+}
+.tier-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.std-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.std-item label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+.std-item b { color: var(--text); font-weight: 600; margin-left: 4px; }
+.std-item input[type=range] { width: 100%; accent-color: var(--accent); }
+/* 非该角色主要属性的滑块：置灰、不可调、不参与评估 */
+.std-item.gray label, .std-item.gray b { color: #b3b8bf; }
+.std-item.gray input[type=range] { accent-color: #c4c9d0; opacity: .55; }
+.std-item.gray .gray-tip { display: inline; color: #b3b8bf; font-size: 12px; margin-left: 6px; }
+.std-item .gray-tip { display: none; }
+.toggle {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel); cursor: pointer; color: var(--muted); font-size: 13px;
+}
+.toggle.on { background: #e7f7ec; color: var(--good); border-color: #b9e6c8; }
+.toggle.off { background: #fdeaea; color: var(--bad); border-color: #f3c0c0; }
+.score-compare { display: flex; gap: 12px; margin: 8px 0 16px; }
+.score-box {
+  flex: 1; text-align: center; padding: 14px; border-radius: var(--radius);
+  border: 1px solid var(--line); background: var(--panel);
+}
+.score-box span { display: block; color: var(--muted); font-size: 13px; }
+.score-box b { font-size: 30px; font-weight: 700; color: var(--accent); }
+
+/* ── 加载态 ──────────────────────────── */
+.loading { color: var(--muted); padding: 8px 0; font-size: 13px; }
+
+/* ── 开局选游戏 ──────────────────────── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, .45);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.overlay-card {
+  background: var(--panel); border-radius: 16px; padding: 28px 32px;
+  max-width: 560px; width: 92%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+}
+.overlay-card h2 { font-size: 22px; margin-bottom: 6px; }
+
+/* 资产列表项：可点击查看详情 */
+.asset-item { cursor: pointer; transition: background .12s; border-radius: 8px; }
+.asset-item:hover { background: var(--accent-soft); }
+.detail-row {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 14px;
+}
+.detail-row:last-of-type { border-bottom: none; }
+.detail-row .k { color: var(--muted); flex-shrink: 0; }
+.detail-row .v { color: var(--text); text-align: right; word-break: break-all; }
+.detail-sub { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.detail-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.detail-meta { margin-top: 10px; font-size: 12px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 8px; }
+.game-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 18px; }
+.game-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 18px 10px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--bg); cursor: pointer; font-size: 15px; color: var(--text);
+  transition: all .15s;
+}
+.game-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.game-card b { font-size: 16px; }
+.game-card span { font-size: 12px; color: var(--muted); }
+
+/* ── 危险按钮 / 队伍 ─────────────────── */
+.ghost.danger { color: var(--bad); border-color: #f3c0c0; }
+.ghost.danger:hover { background: #fdeaea; }
+.team-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.team-head .ghost { padding: 3px 10px; font-size: 12px; }
+.member-weight-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.member-weight { display: flex; align-items: center; gap: 6px; }
+.member-weight input {
+  width: 60px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px;
+}

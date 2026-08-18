@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>二游毕业指导</title>
+  <link rel="stylesheet" href="/style.css?v=7" />
+</head>
+<body>
+  <!-- 开局选游戏 -->
+  <div class="overlay hidden" id="onboarding">
+    <div class="overlay-card">
+      <h2>选择你的游戏</h2>
+      <p class="hint">先选一个游戏，之后所有识别、配装、培养建议都会按它的规则来。</p>
+      <div class="game-cards" id="gameCards"></div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div>
+        <h1>二游毕业指导</h1>
+        <p class="brand-sub">识别资产 · 评估毕业 · 配装推荐 · 队伍规划</p>
+      </div>
+    </div>
+    <div class="game-box">
+      <label for="gameSelect">游戏</label>
+      <select id="gameSelect"></select>
+      <label for="themeSelect" style="margin-left:8px">主题</label>
+      <select id="themeSelect">
+        <option value="blue">蓝紫</option>
+        <option value="green">森林绿</option>
+        <option value="pink">樱花粉</option>
+        <option value="dark">暗夜</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar">
+      <button class="nav-btn active" data-section="panel-assets">资产识别</button>
+      <button class="nav-btn" data-section="panel-graduate">毕业度评估</button>
+      <button class="nav-btn" data-section="panel-recommend">配装推荐</button>
+      <button class="nav-btn" data-section="panel-team">队伍配置</button>
+      <button class="nav-btn" data-section="panel-standard">毕业标准</button>
+
+      <div class="side-summary">
+        <div class="side-summary-title">账户资产</div>
+        <div id="assetSummaryBody" class="side-summary-body">
+          <div class="side-summary-empty">暂时没有任何资料，请导入</div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="content">
+
+      <!-- 资产识别 -->
+      <section class="panel active" id="panel-assets">
+        <h2>资产识别</h2>
+        <p class="hint">把游戏里的角色、武器、装备与材料交给系统，自动整理成资产清单。</p>
+
+        <div class="mode-switch">
+          <button class="mode-btn active" data-mode="screen">读屏扫描</button>
+          <button class="mode-btn" data-mode="image">上传截图</button>
+          <button class="mode-btn" data-mode="text">粘贴文本</button>
+          <button class="mode-btn" data-mode="auto">自动导入</button>
+        </div>
+
+        <div id="mode-auto" class="mode-body hidden">
+          <label class="drop-zone" for="collectFile">
+            <span id="collectFileText">选择导出文件（JSON），或拖拽到此处</span>
+            <input type="file" id="collectFile" accept=".json,application/json" hidden />
+          </label>
+          <textarea id="collectText" rows="5" placeholder="或把导出的数据整段粘贴到这里（JSON / 文本行都行）"></textarea>
+          <div class="action-row">
+            <button class="primary" id="btnCollectFile">从文件导入</button>
+            <button class="primary" id="btnCollectText">粘贴导入</button>
+          </div>
+          <p class="hint">导出文件来自伴生导出工具（如 Amenoma 圣遗物导出器，自动翻页截图识别后导出，无需你手点）。也可以先点「导入示例账户」体验全流程。</p>
+        </div>
+
+        <div id="mode-screen" class="mode-body">
+          <video id="captureVideo" autoplay playsinline muted class="capture-preview hidden"></video>
+          <div class="action-row">
+            <button class="primary" id="btnStartCapture">选择游戏窗口</button>
+            <button class="primary hidden" id="btnCaptureOnce">识别当前画面</button>
+            <button class="ghost hidden" id="btnAutoCapture">定时采集</button>
+            <button class="ghost hidden" id="btnStopCapture">停止</button>
+          </div>
+          <p class="hint">首次识别会联网下载识别模型（约 1~2 分钟，之后秒级）；全屏独占可能黑屏，建议游戏使用无边框窗口。识别结果会自动累加——在游戏里翻到武器/圣遗物/材料页逐页扫描即可，翻完点「停止」。</p>
+
+          <div class="card" style="margin-top:8px">
+            <div class="card-title">伴生工具自动点击（零参与拿完整属性）</div>
+            <p class="hint">浏览器只能「看」不能「点」。此功能调用本机伴生工具模拟点击详情页，自动翻页扫描并 OCR 完整属性，无需你手动翻页；中断后可用「断点续采」从上次位置继续。</p>
+            <div class="row" style="margin-top:4px">
+              <input type="text" id="acWindow" placeholder="游戏窗口标题（如 原神）" style="flex:1;min-width:140px;padding:6px 10px;border:1px solid #e6e8eb;border-radius:8px" />
+              <input type="text" id="acOutput" value="data/artifacts_auto.json" placeholder="输出文件（项目目录内）" style="flex:1;min-width:140px;padding:6px 10px;border:1px solid #e6e8eb;border-radius:8px" />
+              <input type="number" id="acMaxItems" value="200" min="1" max="2000" title="最多采集件数" style="width:90px;padding:6px 10px;border:1px solid #e6e8eb;border-radius:8px" />
+            </div>
+            <div class="row" style="margin-top:6px">
+              <input type="text" id="acViewport" placeholder="画面区域 x,y,w,h（百分比，可选；浏览器/云游戏非全屏时填，如 0,12,100,82）" style="flex:1;padding:6px 10px;border:1px solid #e6e8eb;border-radius:8px" />
+            </div>
+            <div class="row" style="margin-top:6px">
+              <label class="chk"><input type="checkbox" id="acResume" /> 断点续采（--resume）</label>
+              <span class="hint">首次使用请先跑一次校准（见 tools/auto_export.py --calibrate）</span>
+            </div>
+            <div class="action-row" style="margin-top:6px">
+              <button class="primary" id="btnAcStart">开启自动点击</button>
+              <button class="ghost" id="btnAcStop" disabled>停止</button>
+              <button class="primary" id="btnAcLoad" disabled>载入采集结果</button>
+            </div>
+            <div id="acStatus" class="hint" style="margin-top:6px;white-space:pre-line">未启动。</div>
+          </div>
+        </div>
+
+        <div id="mode-image" class="mode-body hidden">
+          <label class="drop-zone" for="fileInput">
+            <span id="dropText">点击选择截图，或拖拽到此处</span>
+            <input type="file" id="fileInput" accept="image/*" hidden />
+          </label>
+          <div class="action-row">
+            <button class="primary" id="btnAnalyzeImage">上传并识别</button>
+          </div>
+          <p class="hint">需要已安装文字识别组件的环境；识别失败会自动提示。</p>
+        </div>
+
+        <div id="mode-text" class="mode-body hidden">
+          <textarea id="assetText" rows="7" placeholder="每行一条，例如：&#10;胡桃 Lv.90&#10;护摩之杖 Lv.90&#10;炽烈的炎之魔女（生命值）花"></textarea>
+          <div class="action-row">
+            <button class="primary" id="btnAnalyzeText">开始识别</button>
+            <button class="ghost" id="btnFillSample">填入示例</button>
+          </div>
+        </div>
+
+        <div class="action-row" id="assetActions">
+          <button class="primary" id="btnTestData">导入测试数据</button>
+          <button class="ghost" id="btnSaveAssets">保存我的资产</button>
+          <button class="ghost" id="btnClearAssets">清空当前资产</button>
+          <button class="ghost danger" id="btnDeleteAssets">删除账户数据</button>
+        </div>
+
+        <div id="assetResult" class="result hidden"></div>
+      </section>
+
+      <!-- 毕业度评估 -->
+      <section class="panel" id="panel-graduate">
+        <h2>毕业度评估</h2>
+        <p class="hint">选定角色，看看它离「毕业」还差多少。</p>
+        <div class="row">
+          <label>角色</label>
+          <select id="gradChar"></select>
+          <button class="primary" id="btnGraduate">评估毕业度</button>
+        </div>
+        <div id="gradResult" class="result hidden"></div>
+      </section>
+
+      <!-- 配装推荐 -->
+      <section class="panel" id="panel-recommend">
+        <h2>配装推荐</h2>
+        <p class="hint">可同时选择多人（最多 9 人），一次性生成各自配装；也可按毕业档位生成可复制的培养建议。</p>
+        <div class="row"><label>角色</label><div id="recChars" class="chips"></div></div>
+        <div class="row">
+          <button class="primary" id="btnRecommend">生成配装推荐</button>
+        </div>
+        <div class="row">
+          <label>毕业档位</label>
+          <select id="adviceTier">
+            <option value="standard">标准</option>
+            <option value="casual">休闲</option>
+            <option value="extreme">极限</option>
+          </select>
+          <button class="primary" id="btnAdvice">生成培养建议</button>
+        </div>
+        <div id="recResult" class="result hidden"></div>
+        <div id="adviceResult" class="result hidden"></div>
+      </section>
+
+      <!-- 队伍配置 -->
+      <section class="panel" id="panel-team">
+        <h2>队伍配置</h2>
+        <p class="hint">可配置多支队伍（最多 4 队），每队人数按游戏限制（原神/鸣潮 4 人，绝区零 3 人），系统做全局武器分配并给出培养顺序。</p>
+        <div class="row">
+          <button class="ghost" id="btnAddTeam">添加队伍</button>
+          <button class="primary" id="btnTeams">生成全部队伍方案</button>
+        </div>
+        <div id="teamBlocks"></div>
+        <div id="teamResult" class="result hidden"></div>
+      </section>
+
+      <!-- 毕业标准 -->
+      <section class="panel" id="panel-standard">
+        <h2>毕业标准</h2>
+        <p class="hint">系统给建议，标准你来定。拖动滑杆实时看毕业度变化。</p>
+        <div class="row">
+          <label>角色</label>
+          <select id="stdChar"></select>
+          <div class="tier-switch" id="tierSwitch">
+            <button class="tier-btn active" data-tier="standard">标准</button>
+            <button class="tier-btn" data-tier="casual">休闲</button>
+            <button class="tier-btn" data-tier="extreme">极限</button>
+            <button class="tier-btn" data-tier="custom">自定义</button>
+          </div>
+        </div>
+
+        <div class="std-grid">
+          <div class="std-item">
+            <label>角色等级 <b id="stdLevelVal">90</b></label>
+            <input type="range" id="stdLevel" min="70" max="100" step="1" value="90" />
+          </div>
+          <div class="std-item">
+            <label>武器等级 <b id="stdWeaponVal">90</b></label>
+            <input type="range" id="stdWeapon" min="70" max="100" step="1" value="90" />
+          </div>
+          <div class="std-item">
+            <label>普通攻击 <b id="stdTalentNormalVal">9</b> 级</label>
+            <input type="range" id="stdTalentNormal" min="1" max="10" step="1" value="9" />
+          </div>
+          <div class="std-item">
+            <label>元素战绩 <b id="stdTalentSkillVal">9</b> 级</label>
+            <input type="range" id="stdTalentSkill" min="1" max="10" step="1" value="9" />
+          </div>
+          <div class="std-item">
+            <label>元素爆发 <b id="stdTalentBurstVal">9</b> 级</label>
+            <input type="range" id="stdTalentBurst" min="1" max="10" step="1" value="9" />
+          </div>
+          <div class="std-item">
+            <label>套装要求</label>
+            <button class="toggle on" id="stdSetToggle">需要套装</button>
+          </div>
+          <div class="std-item">
+            <label>暴击率 <b id="stdCrVal">60</b><span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdCr" min="0" max="100" step="1" value="60" />
+          </div>
+          <div class="std-item">
+            <label>暴击伤害 <b id="stdCdVal">200</b><span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdCd" min="0" max="400" step="1" value="200" />
+          </div>
+          <div class="std-item">
+            <label>元素充能效率 <b id="stdErVal">200</b>%<span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdEr" min="100" max="400" step="1" value="200" />
+          </div>
+          <div class="std-item">
+            <label>元素精通 <b id="stdEmVal">300</b><span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdEm" min="0" max="2000" step="1" value="300" />
+          </div>
+          <div class="std-item">
+            <label>攻击力 <b id="stdAtkVal">2500</b><span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdAtk" min="0" max="6666" step="1" value="2500" />
+          </div>
+          <div class="std-item">
+            <label>防御力 <b id="stdDefVal">1500</b><span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdDef" min="0" max="6666" step="1" value="1500" />
+          </div>
+          <div class="std-item">
+            <label>生命值 <b id="stdHpVal">30000</b><span class="gray-tip">（该角色不要求）</span></label>
+            <input type="range" id="stdHp" min="0" max="100000" step="100" value="30000" />
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:4px">
+          <div class="card-title">自定义词条（自由添加任意词条与目标数值）</div>
+          <div class="row">
+            <input type="text" id="customStatName" list="statOptions" placeholder="词条名，如 水元素伤害加成"
+                   style="flex:1;min-width:180px;padding:6px 10px;border:1px solid #e6e8eb;border-radius:8px" />
+            <input type="number" id="customStatValue" placeholder="目标数值" min="0" step="1"
+                   style="width:130px;padding:6px 10px;border:1px solid #e6e8eb;border-radius:8px" />
+            <button class="ghost" id="btnAddCustomStat">添加词条</button>
+          </div>
+          <datalist id="statOptions">
+            <option value="暴击率"></option><option value="暴击伤害"></option>
+            <option value="元素充能效率"></option><option value="元素精通"></option>
+            <option value="攻击力"></option><option value="防御力"></option>
+            <option value="生命值"></option>
+            <option value="火元素伤害加成"></option><option value="水元素伤害加成"></option>
+            <option value="冰元素伤害加成"></option><option value="雷元素伤害加成"></option>
+            <option value="风元素伤害加成"></option><option value="岩元素伤害加成"></option>
+            <option value="草元素伤害加成"></option><option value="物理伤害加成"></option>
+          </datalist>
+          <div id="customStatList" class="chips" style="margin-top:8px"></div>
+        </div>
+
+        <div class="score-compare" id="scoreCompare">
+          <div class="score-box"><span>系统标准</span><b id="sysScore">—</b></div>
+          <div class="score-box"><span>我的标准</span><b id="myScore">—</b></div>
+        </div>
+
+        <div class="action-row">
+          <button class="primary" id="btnSaveStandard">保存我的标准</button>
+          <button class="ghost" id="btnResetStandard">恢复默认</button>
+        </div>
+        <div id="stdResult" class="result hidden"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 资产详情弹窗 -->
+  <div class="overlay hidden" id="detailOverlay">
+    <div class="overlay-card" style="text-align:left;max-width:520px;max-height:80vh;overflow-y:auto">
+      <div id="detailBody"></div>
+      <button class="primary" id="btnCloseDetail" style="margin-top:16px;width:100%">关闭</button>
+    </div>
+  </div>
+
+  <script src="/app.js?v=12"></script>
+</body>
+</html>

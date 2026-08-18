@@ -1,0 +1,15 @@
+[PASS] health ｜ {'status': 'ok'}
+[PASS] games ｜ 3 个游戏，max_team_size=[4, 4, 3]
+[PASS] sample 返回文本行 ｜ 24 行，首行='胡桃 Lv.90'
+[PASS] analyze 识别资产 ｜ assets=24 unresolved=0 types={'角色': 10, '武器': 6, '装备': 5, '材料': 3}
+[PASS] analyze 无未识别角色/武器 ｜ unresolved=[]
+[PASS] 角色资产 ｜ 10 个
+[PASS] 装备资产 ｜ 5 个
+[PASS] 材料资产 ｜ 3 个
+[PASS] 角色带等级 ｜ 胡桃 lv=90
+[PASS] 角色匹配到实体 ｜ entity_id=1
+[PASS] 装备带主词条 ｜ 炽烈的炎之魔女 主=生命值
+[PASS] graduate 返回评分 ｜ score=78.4 dims=[]
+[PASS] advice 生成文本 ｜ 1230 字，含「毕业」=True
+
+共 13 项，失败 0 项
